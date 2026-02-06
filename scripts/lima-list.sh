@@ -19,10 +19,18 @@ readonly RESET='\033[0m'
 readonly RUNNING_ICON="●"
 readonly STOPPED_ICON="○"
 
-# Print header
-echo -e "${BOLD}${BLUE}═══════════════════════════════════════════════════════════════════════════${RESET}"
-echo -e "${BOLD}${CYAN}Lima VMs${RESET}"
-echo -e "${BOLD}${BLUE}═══════════════════════════════════════════════════════════════════════════${RESET}"
+# Print banner
+echo -e "${BOLD}${CYAN}"
+cat << 'EOF'
+    ██╗   ██╗████████╗      ██╗     ██╗███╗   ███╗ █████╗
+    ██║   ██║╚══██╔══╝      ██║     ██║████╗ ████║██╔══██╗
+    ██║   ██║   ██║         ██║     ██║██╔████╔██║███████║
+    ██║   ██║   ██║         ██║     ██║██║╚██╔╝██║██╔══██║
+    ╚██████╔╝   ██║         ███████╗██║██║ ╚═╝ ██║██║  ██║
+     ╚═════╝    ╚═╝         ╚══════╝╚═╝╚═╝     ╚═╝╚═╝  ╚═╝
+EOF
+echo -e "${RESET}"
+echo -e "${BOLD}Lima VM Status at a Glance${RESET}"
 echo ""
 
 # Parse limactl list output
@@ -34,6 +42,7 @@ limactl list | tail -n +2 | while read -r line; do
     cpus=$(echo "$line" | awk '{print $4}')
     memory=$(echo "$line" | awk '{print $5}')
     disk=$(echo "$line" | awk '{print $6}')
+    dir=$(echo "$line" | awk '{print $7}')
 
     # Skip if no name (empty line)
     [[ -z "$name" ]] && continue
@@ -56,8 +65,12 @@ limactl list | tail -n +2 | while read -r line; do
 
     # Print formatted line with proper escaping
     printf "%b%-20s%b %b\n" "${BOLD}" "${name}" "${RESET}" "${status_display}"
-    printf "  %bSSH:%b    %b%-30s%b %bCPUs:%b %s\n" "${CYAN}" "${RESET}" "${ssh_color}" "${ssh_text}" "${RESET}" "${CYAN}" "${RESET}" "$cpus"
-    printf "  %bMemory:%b %-20s %bDisk:%b %s\n" "${CYAN}" "${RESET}" "$memory" "${CYAN}" "${RESET}" "$disk"
+    printf "  %bSSH:%b %b%-21s%b %bCPUs:%b %-3s %bMem:%b %-6s %bDisk:%b %s\n" \
+        "${CYAN}" "${RESET}" "${ssh_color}" "${ssh_text}" "${RESET}" \
+        "${CYAN}" "${RESET}" "$cpus" \
+        "${CYAN}" "${RESET}" "$memory" \
+        "${CYAN}" "${RESET}" "$disk"
+    printf "  %bDir:%b %s\n" "${CYAN}" "${RESET}" "$dir"
     echo ""
 done
 
